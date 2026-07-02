@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+# GUI Panel Widget for Or view
+# Represents one of the main dashboard tabs in the user interface.
+
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
                               QTableWidget, QTableWidgetItem, QHeaderView,
                               QAbstractItemView, QMessageBox, QLabel, QComboBox)
@@ -35,11 +39,17 @@ STATUT_LABELS = {
 
 class ORWidget(QWidget):
     def __init__(self):
+        """
+        UI lifecycle method: '__init__'.
+        """
         super().__init__()
         self._build()
         self.refresh()
 
     def _build(self):
+        """
+        UI lifecycle method: '_build'.
+        """
         layout = QVBoxLayout(self)
         layout.setContentsMargins(24, 24, 24, 24)
         layout.setSpacing(16)
@@ -84,6 +94,9 @@ class ORWidget(QWidget):
         layout.addLayout(actions)
 
     def refresh(self):
+        """
+        UI lifecycle method: 'refresh'.
+        """
         self._ors = or_repo.get_all()
         self._vehicules = {v.id: v for v in vehicule_repo.get_all()}
         self._clients = {c.id: c for c in client_repo.get_all()}
@@ -91,6 +104,9 @@ class ORWidget(QWidget):
         self._fill_table(self._ors)
 
     def _fill_table(self, ors):
+        """
+        UI lifecycle method: '_fill_table'.
+        """
         self.table.setRowCount(0)
         for o in ors:
             row = self.table.rowCount()
@@ -113,6 +129,9 @@ class ORWidget(QWidget):
                 self.table.setItem(row, col, item)
 
     def _filter(self):
+        """
+        UI lifecycle method: '_filter'.
+        """
         statut = self.filter_combo.currentData()
         if statut:
             self._fill_table([o for o in self._ors if o.statut == statut])
@@ -120,18 +139,27 @@ class ORWidget(QWidget):
             self._fill_table(self._ors)
 
     def _selected_id(self):
+        """
+        UI lifecycle method: '_selected_id'.
+        """
         row = self.table.currentRow()
         if row < 0:
             return None
         return self.table.item(row, 0).data(Qt.ItemDataRole.UserRole)
 
     def _add(self):
+        """
+        UI lifecycle method: '_add'.
+        """
         dlg = ORDialog(self)
         if dlg.exec():
             or_service.creer_or(dlg.vehicule_id, dlg.description)
             self.refresh()
 
     def _open_detail(self):
+        """
+        UI lifecycle method: '_open_detail'.
+        """
         or_id = self._selected_id()
         if not or_id:
             return
@@ -141,6 +169,9 @@ class ORWidget(QWidget):
         self.refresh()
 
     def _delete(self):
+        """
+        UI lifecycle method: '_delete'.
+        """
         or_id = self._selected_id()
         if not or_id:
             return

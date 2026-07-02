@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+# GUI Panel Widget for Client view
+# Represents one of the main dashboard tabs in the user interface.
+
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
                               QTableWidget, QTableWidgetItem, QLineEdit,
                               QHeaderView, QAbstractItemView, QMessageBox)
@@ -8,11 +12,17 @@ from ui.dialogs.client_dialog import ClientDialog
 
 class ClientWidget(QWidget):
     def __init__(self):
+        """
+        UI lifecycle method: '__init__'.
+        """
         super().__init__()
         self._build()
         self.refresh()
 
     def _build(self):
+        """
+        UI lifecycle method: '_build'.
+        """
         layout = QVBoxLayout(self)
         layout.setContentsMargins(24, 24, 24, 24)
         layout.setSpacing(16)
@@ -57,10 +67,16 @@ class ClientWidget(QWidget):
         layout.addLayout(actions)
 
     def refresh(self):
+        """
+        UI lifecycle method: 'refresh'.
+        """
         self._clients = client_repo.get_all()
         self._fill_table(self._clients)
 
     def _fill_table(self, clients):
+        """
+        UI lifecycle method: '_fill_table'.
+        """
         self.table.setRowCount(0)
         for c in clients:
             row = self.table.rowCount()
@@ -71,24 +87,36 @@ class ClientWidget(QWidget):
                 self.table.setItem(row, col, item)
 
     def _search(self, text):
+        """
+        UI lifecycle method: '_search'.
+        """
         if text.strip():
             self._fill_table(client_repo.search(text))
         else:
             self._fill_table(self._clients)
 
     def _selected_id(self):
+        """
+        UI lifecycle method: '_selected_id'.
+        """
         row = self.table.currentRow()
         if row < 0:
             return None
         return self.table.item(row, 0).data(Qt.ItemDataRole.UserRole)
 
     def _add(self):
+        """
+        UI lifecycle method: '_add'.
+        """
         dlg = ClientDialog(self)
         if dlg.exec():
             client_repo.create(dlg.get_client())
             self.refresh()
 
     def _edit(self):
+        """
+        UI lifecycle method: '_edit'.
+        """
         cid = self._selected_id()
         if not cid:
             return
@@ -101,6 +129,9 @@ class ClientWidget(QWidget):
             self.refresh()
 
     def _delete(self):
+        """
+        UI lifecycle method: '_delete'.
+        """
         cid = self._selected_id()
         if not cid:
             return

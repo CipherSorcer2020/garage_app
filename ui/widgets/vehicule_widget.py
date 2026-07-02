@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+# GUI Panel Widget for Vehicule view
+# Represents one of the main dashboard tabs in the user interface.
+
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
                               QTableWidget, QTableWidgetItem, QLineEdit,
                               QHeaderView, QAbstractItemView, QMessageBox)
@@ -8,11 +12,17 @@ from ui.dialogs.vehicule_dialog import VehiculeDialog
 
 class VehiculeWidget(QWidget):
     def __init__(self):
+        """
+        UI lifecycle method: '__init__'.
+        """
         super().__init__()
         self._build()
         self.refresh()
 
     def _build(self):
+        """
+        UI lifecycle method: '_build'.
+        """
         layout = QVBoxLayout(self)
         layout.setContentsMargins(24, 24, 24, 24)
         layout.setSpacing(16)
@@ -54,11 +64,17 @@ class VehiculeWidget(QWidget):
         layout.addLayout(actions)
 
     def refresh(self):
+        """
+        UI lifecycle method: 'refresh'.
+        """
         self._vehicules = vehicule_repo.get_all()
         self._clients = {c.id: c for c in client_repo.get_all()}
         self._fill_table(self._vehicules)
 
     def _fill_table(self, vehicules):
+        """
+        UI lifecycle method: '_fill_table'.
+        """
         self.table.setRowCount(0)
         for v in vehicules:
             row = self.table.rowCount()
@@ -72,24 +88,36 @@ class VehiculeWidget(QWidget):
                 self.table.setItem(row, col, item)
 
     def _search(self, text):
+        """
+        UI lifecycle method: '_search'.
+        """
         t = text.lower()
         filtered = [v for v in self._vehicules if t in (v.immatriculation or "").lower()
                     or t in (v.marque or "").lower() or t in (v.modele or "").lower()]
         self._fill_table(filtered)
 
     def _selected_id(self):
+        """
+        UI lifecycle method: '_selected_id'.
+        """
         row = self.table.currentRow()
         if row < 0:
             return None
         return self.table.item(row, 0).data(Qt.ItemDataRole.UserRole)
 
     def _add(self):
+        """
+        UI lifecycle method: '_add'.
+        """
         dlg = VehiculeDialog(self)
         if dlg.exec():
             vehicule_repo.create(dlg.get_vehicule())
             self.refresh()
 
     def _edit(self):
+        """
+        UI lifecycle method: '_edit'.
+        """
         vid = self._selected_id()
         if not vid:
             return
@@ -102,6 +130,9 @@ class VehiculeWidget(QWidget):
             self.refresh()
 
     def _delete(self):
+        """
+        UI lifecycle method: '_delete'.
+        """
         vid = self._selected_id()
         if not vid:
             return

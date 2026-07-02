@@ -1,9 +1,17 @@
+# -*- coding: utf-8 -*-
+# Data Model representation of Facture table
+
 from dataclasses import dataclass
 from typing import Optional
 from datetime import date
 
 @dataclass
 class Facture:
+    """
+    Data Model representing a Facture in the application.
+    This class is a simple Python dataclass holding Facture properties.
+    """
+
     or_id: int
     client_id: int
     numero: str

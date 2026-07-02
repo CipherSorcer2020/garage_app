@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+# GUI Panel Widget for Facture view
+# Represents one of the main dashboard tabs in the user interface.
+
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
                               QTableWidget, QTableWidgetItem, QHeaderView,
                               QAbstractItemView, QComboBox, QLabel, QMessageBox)
@@ -9,11 +13,17 @@ from services import facturation_service, pdf_service
 
 class FactureWidget(QWidget):
     def __init__(self):
+        """
+        UI lifecycle method: '__init__'.
+        """
         super().__init__()
         self._build()
         self.refresh()
 
     def _build(self):
+        """
+        UI lifecycle method: '_build'.
+        """
         layout = QVBoxLayout(self)
         layout.setContentsMargins(24, 24, 24, 24)
         layout.setSpacing(16)
@@ -56,6 +66,9 @@ class FactureWidget(QWidget):
         layout.addWidget(self.lbl_ca)
 
     def refresh(self):
+        """
+        UI lifecycle method: 'refresh'.
+        """
         self._factures = facture_repo.get_all()
         self._clients = {c.id: c for c in client_repo.get_all()}
         self._fill_table(self._factures)
@@ -63,6 +76,9 @@ class FactureWidget(QWidget):
         self.lbl_ca.setText(f"CA total encaissé : {ca:.2f} DH")
 
     def _fill_table(self, factures):
+        """
+        UI lifecycle method: '_fill_table'.
+        """
         self.table.setRowCount(0)
         for f in factures:
             row = self.table.rowCount()
@@ -84,6 +100,9 @@ class FactureWidget(QWidget):
                 self.table.setItem(row, col, item)
 
     def _filter(self):
+        """
+        UI lifecycle method: '_filter'.
+        """
         idx = self.filter_combo.currentIndex()
         if idx == 1:
             self._fill_table([f for f in self._factures if f.statut == "non_payee"])
@@ -93,6 +112,9 @@ class FactureWidget(QWidget):
             self._fill_table(self._factures)
 
     def _selected_facture(self):
+        """
+        UI lifecycle method: '_selected_facture'.
+        """
         row = self.table.currentRow()
         if row < 0:
             return None
@@ -100,6 +122,9 @@ class FactureWidget(QWidget):
         return facture_repo.get_by_id(fid)
 
     def _marquer_payee(self):
+        """
+        UI lifecycle method: '_marquer_payee'.
+        """
         f = self._selected_facture()
         if not f:
             return
@@ -114,6 +139,9 @@ class FactureWidget(QWidget):
             self.refresh()
 
     def _generer_pdf(self):
+        """
+        UI lifecycle method: '_generer_pdf'.
+        """
         f = self._selected_facture()
         if not f:
             return

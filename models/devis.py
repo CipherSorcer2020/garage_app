@@ -1,9 +1,17 @@
+# -*- coding: utf-8 -*-
+# Data Model representation of Devis table
+
 from dataclasses import dataclass
 from typing import Optional
 from datetime import date
 
 @dataclass
 class Devis:
+    """
+    Data Model representing a Devis in the application.
+    This class is a simple Python dataclass holding Devis properties.
+    """
+
     or_id: int
     montant_ht: Optional[float] = None
     tva: float = 20.00

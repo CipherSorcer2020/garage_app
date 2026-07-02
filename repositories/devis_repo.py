@@ -1,10 +1,20 @@
+# -*- coding: utf-8 -*-
+# Repository Data Access Layer for devis_repo
+# Executes raw SQL queries and maps result rows to data models.
+
 from config.database import get_connection
 from models.devis import Devis
 
 def _row_to_devis(r):
+    """
+    Handles database operations for function '_row_to_devis'.
+    """
     return Devis(id=r[0], or_id=r[1], montant_ht=float(r[2]) if r[2] else None, tva=float(r[3]), statut=r[4], date_creation=r[5], accepte=r[6])
 
 def get_by_or(or_id: int):
+    """
+    Handles database operations for function 'get_by_or'.
+    """
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("SELECT id, or_id, montant_ht, tva, statut, date_creation, accepte FROM devis WHERE or_id=%s", (or_id,))
@@ -13,6 +23,9 @@ def get_by_or(or_id: int):
     return _row_to_devis(r) if r else None
 
 def create(d: Devis):
+    """
+    Handles database operations for function 'create'.
+    """
     conn = get_connection()
     cur = conn.cursor()
     cur.execute(
@@ -24,6 +37,9 @@ def create(d: Devis):
     return d
 
 def update(d: Devis):
+    """
+    Handles database operations for function 'update'.
+    """
     conn = get_connection()
     cur = conn.cursor()
     cur.execute(
@@ -33,12 +49,18 @@ def update(d: Devis):
     conn.commit(); cur.close(); conn.close()
 
 def accepter(devis_id: int):
+    """
+    Handles database operations for function 'accepter'.
+    """
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("UPDATE devis SET accepte=TRUE, statut='accepte' WHERE id=%s", (devis_id,))
     conn.commit(); cur.close(); conn.close()
 
 def refuser(devis_id: int):
+    """
+    Handles database operations for function 'refuser'.
+    """
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("UPDATE devis SET accepte=FALSE, statut='refuse' WHERE id=%s", (devis_id,))

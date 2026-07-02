@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+# GUI Modal Dialog for Or
+# Renders an input form popup window for creation or editing.
+
 from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QFormLayout, QComboBox,
                               QTextEdit, QDialogButtonBox, QLabel)
 from repositories import vehicule_repo, client_repo
@@ -5,6 +9,9 @@ from repositories import vehicule_repo, client_repo
 
 class ORDialog(QDialog):
     def __init__(self, parent=None):
+        """
+        Modal Dialog method: '__init__'.
+        """
         super().__init__(parent)
         self.setWindowTitle("Nouvel ordre de réparation")
         self.setMinimumWidth(420)
@@ -13,6 +20,9 @@ class ORDialog(QDialog):
         self._build()
 
     def _build(self):
+        """
+        Modal Dialog method: '_build'.
+        """
         layout = QVBoxLayout(self)
         form = QFormLayout()
 
@@ -43,6 +53,9 @@ class ORDialog(QDialog):
         layout.addWidget(btns)
 
     def _validate(self):
+        """
+        Modal Dialog method: '_validate'.
+        """
         self.vehicule_id = self.vehicule_combo.currentData()
         self.description = self.desc.toPlainText().strip() or None
         if not self.vehicule_id:

@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+# GUI Modal Dialog for Client
+# Renders an input form popup window for creation or editing.
+
 from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QFormLayout, QLineEdit,
                               QDialogButtonBox, QLabel)
 from models.client import Client
@@ -5,12 +9,18 @@ from models.client import Client
 
 class ClientDialog(QDialog):
     def __init__(self, parent=None, client: Client = None):
+        """
+        Modal Dialog method: '__init__'.
+        """
         super().__init__(parent)
         self.setWindowTitle("Nouveau client" if not client else "Modifier client")
         self.setMinimumWidth(400)
         self._build(client)
 
     def _build(self, client):
+        """
+        Modal Dialog method: '_build'.
+        """
         layout = QVBoxLayout(self)
         form = QFormLayout()
 
@@ -37,12 +47,18 @@ class ClientDialog(QDialog):
         layout.addWidget(btns)
 
     def _validate(self):
+        """
+        Modal Dialog method: '_validate'.
+        """
         if not self.nom.text().strip():
             self.error.setText("Le nom est obligatoire.")
             return
         self.accept()
 
     def get_client(self) -> Client:
+        """
+        Modal Dialog method: 'get_client'.
+        """
         return Client(
             nom=self.nom.text().strip(),
             prenom=self.prenom.text().strip() or None,

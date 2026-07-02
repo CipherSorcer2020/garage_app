@@ -1,7 +1,14 @@
+# -*- coding: utf-8 -*-
+# Repository Data Access Layer for client_repo
+# Executes raw SQL queries and maps result rows to data models.
+
 from config.database import get_connection
 from models.client import Client
 
 def get_all():
+    """
+    Handles database operations for function 'get_all'.
+    """
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("SELECT id, nom, prenom, telephone, email, adresse, date_creation FROM clients ORDER BY nom")
@@ -10,6 +17,9 @@ def get_all():
     return [Client(id=r[0], nom=r[1], prenom=r[2], telephone=r[3], email=r[4], adresse=r[5], date_creation=r[6]) for r in rows]
 
 def get_by_id(client_id: int):
+    """
+    Handles database operations for function 'get_by_id'.
+    """
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("SELECT id, nom, prenom, telephone, email, adresse, date_creation FROM clients WHERE id=%s", (client_id,))
@@ -20,6 +30,9 @@ def get_by_id(client_id: int):
     return None
 
 def search(query: str):
+    """
+    Handles database operations for function 'search'.
+    """
     conn = get_connection()
     cur = conn.cursor()
     cur.execute(
@@ -31,6 +44,9 @@ def search(query: str):
     return [Client(id=r[0], nom=r[1], prenom=r[2], telephone=r[3], email=r[4], adresse=r[5]) for r in rows]
 
 def create(client: Client):
+    """
+    Handles database operations for function 'create'.
+    """
     conn = get_connection()
     cur = conn.cursor()
     cur.execute(
@@ -42,6 +58,9 @@ def create(client: Client):
     return client
 
 def update(client: Client):
+    """
+    Handles database operations for function 'update'.
+    """
     conn = get_connection()
     cur = conn.cursor()
     cur.execute(
@@ -51,6 +70,9 @@ def update(client: Client):
     conn.commit(); cur.close(); conn.close()
 
 def delete(client_id: int):
+    """
+    Handles database operations for function 'delete'.
+    """
     conn = get_connection()
     cur = conn.cursor()
     try:

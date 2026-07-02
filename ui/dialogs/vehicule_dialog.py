@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+# GUI Modal Dialog for Vehicule
+# Renders an input form popup window for creation or editing.
+
 from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QFormLayout, QLineEdit,
                               QSpinBox, QComboBox, QDialogButtonBox, QLabel)
 from models.vehicule import Vehicule
@@ -6,12 +10,18 @@ import re
 
 class VehiculeDialog(QDialog):
     def __init__(self, parent=None, vehicule: Vehicule = None):
+        """
+        Modal Dialog method: '__init__'.
+        """
         super().__init__(parent)
         self.setWindowTitle("Nouveau véhicule" if not vehicule else "Modifier véhicule")
         self.setMinimumWidth(400)
         self._build(vehicule)
 
     def _build(self, v):
+        """
+        Modal Dialog method: '_build'.
+        """
         layout = QVBoxLayout(self)
         form = QFormLayout()
 
@@ -53,6 +63,9 @@ class VehiculeDialog(QDialog):
         layout.addWidget(btns)
 
     def _validate(self):
+        """
+        Modal Dialog method: '_validate'.
+        """
         immat = self.immat.text().strip()
         if not immat:
             self.error.setText("L'immatriculation est obligatoire.")
@@ -67,6 +80,9 @@ class VehiculeDialog(QDialog):
         self.accept()
 
     def get_vehicule(self) -> Vehicule:
+        """
+        Modal Dialog method: 'get_vehicule'.
+        """
         return Vehicule(
             client_id=self.client_combo.currentData(),
             immatriculation=self.immat.text().strip().upper(),

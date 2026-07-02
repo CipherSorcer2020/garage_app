@@ -1,10 +1,20 @@
+# -*- coding: utf-8 -*-
+# Repository Data Access Layer for ligne_piece_repo
+# Executes raw SQL queries and maps result rows to data models.
+
 from config.database import get_connection
 from models.ligne_piece import LignePiece
 
 def _row(r):
+    """
+    Handles database operations for function '_row'.
+    """
     return LignePiece(id=r[0], or_id=r[1], reference=r[2], designation=r[3], quantite=r[4], prix_unitaire_ht=float(r[5]) if r[5] else None)
 
 def get_by_or(or_id: int):
+    """
+    Handles database operations for function 'get_by_or'.
+    """
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("SELECT id, or_id, reference, designation, quantite, prix_unitaire_ht FROM lignes_pieces WHERE or_id=%s", (or_id,))
@@ -13,6 +23,9 @@ def get_by_or(or_id: int):
     return [_row(r) for r in rows]
 
 def create(l: LignePiece):
+    """
+    Handles database operations for function 'create'.
+    """
     conn = get_connection()
     cur = conn.cursor()
     cur.execute(
@@ -24,12 +37,18 @@ def create(l: LignePiece):
     return l
 
 def delete(ligne_id: int):
+    """
+    Handles database operations for function 'delete'.
+    """
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("DELETE FROM lignes_pieces WHERE id=%s", (ligne_id,))
     conn.commit(); cur.close(); conn.close()
 
 def delete_by_or(or_id: int):
+    """
+    Handles database operations for function 'delete_by_or'.
+    """
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("DELETE FROM lignes_pieces WHERE or_id=%s", (or_id,))

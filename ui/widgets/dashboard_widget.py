@@ -1,8 +1,15 @@
+# -*- coding: utf-8 -*-
+# GUI Panel Widget for Dashboard view
+# Represents one of the main dashboard tabs in the user interface.
+
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QGridLayout, QFrame)
 from PyQt6.QtCore import Qt
 
 class StatCard(QFrame):
     def __init__(self, label: str, value: str, accent: bool = False):
+        """
+        UI lifecycle method: '__init__'.
+        """
         super().__init__()
         self.setObjectName("card")
         layout = QVBoxLayout(self)
@@ -18,15 +25,24 @@ class StatCard(QFrame):
         self.val_label = val
 
     def set_value(self, v: str):
+        """
+        UI lifecycle method: 'set_value'.
+        """
         self.val_label.setText(v)
 
 
 class DashboardWidget(QWidget):
     def __init__(self):
+        """
+        UI lifecycle method: '__init__'.
+        """
         super().__init__()
         self._build()
 
     def _build(self):
+        """
+        UI lifecycle method: '_build'.
+        """
         layout = QVBoxLayout(self)
         layout.setContentsMargins(24, 24, 24, 24)
         layout.setSpacing(20)
@@ -56,6 +72,9 @@ class DashboardWidget(QWidget):
         layout.addStretch()
 
     def refresh(self):
+        """
+        UI lifecycle method: 'refresh'.
+        """
         try:
             import repositories.or_repo as or_repo
             import repositories.client_repo as client_repo

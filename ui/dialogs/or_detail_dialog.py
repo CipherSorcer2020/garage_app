@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+# GUI Modal Dialog for Or_detail
+# Renders an input form popup window for creation or editing.
+
 from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QPushButton,
                               QLabel, QTextEdit, QTabWidget, QWidget,
                               QTableWidget, QTableWidgetItem, QHeaderView,
@@ -12,6 +16,9 @@ from PyQt6.QtGui import QColor
 
 class ORDetailDialog(QDialog):
     def __init__(self, or_id: int, parent=None):
+        """
+        Modal Dialog method: '__init__'.
+        """
         super().__init__(parent)
         self.or_id = or_id
         self.setWindowTitle(f"OR #{or_id}")
@@ -20,6 +27,9 @@ class ORDetailDialog(QDialog):
         self._build()
 
     def _load(self):
+        """
+        Modal Dialog method: '_load'.
+        """
         self.data = or_service.get_or_complet(self.or_id)
         self.o = self.data['or']
         v = vehicule_repo.get_by_id(self.o.vehicule_id)
@@ -28,6 +38,9 @@ class ORDetailDialog(QDialog):
         self.mecas = utilisateur_repo.get_all()
 
     def _build(self):
+        """
+        Modal Dialog method: '_build'.
+        """
         layout = QVBoxLayout(self)
         layout.setSpacing(16)
 
@@ -72,6 +85,9 @@ class ORDetailDialog(QDialog):
         layout.addLayout(actions)
 
     def _tab_diagnostic(self):
+        """
+        Modal Dialog method: '_tab_diagnostic'.
+        """
         w = QWidget()
         layout = QVBoxLayout(w)
         layout.addWidget(QLabel("Observations du technicien :"))
@@ -87,6 +103,9 @@ class ORDetailDialog(QDialog):
         return w
 
     def _tab_devis(self):
+        """
+        Modal Dialog method: '_tab_devis'.
+        """
         w = QWidget()
         layout = QVBoxLayout(w)
 
@@ -159,6 +178,9 @@ class ORDetailDialog(QDialog):
         return w
 
     def _tab_affectation(self):
+        """
+        Modal Dialog method: '_tab_affectation'.
+        """
         w = QWidget()
         layout = QFormLayout(w)
         self.meca_combo = QComboBox()
@@ -175,6 +197,9 @@ class ORDetailDialog(QDialog):
         return w
 
     def _add_piece_row(self, desig, ref, qty, prix):
+        """
+        Modal Dialog method: '_add_piece_row'.
+        """
         row = self.table_pieces.rowCount()
         self.table_pieces.insertRow(row)
         self.table_pieces.setItem(row, 0, QTableWidgetItem(desig))
@@ -183,6 +208,9 @@ class ORDetailDialog(QDialog):
         self.table_pieces.setItem(row, 3, QTableWidgetItem(f"{prix:.2f}"))
 
     def _add_mo_row(self, desc, duree, taux):
+        """
+        Modal Dialog method: '_add_mo_row'.
+        """
         row = self.table_mo.rowCount()
         self.table_mo.insertRow(row)
         self.table_mo.setItem(row, 0, QTableWidgetItem(desc))
@@ -190,22 +218,34 @@ class ORDetailDialog(QDialog):
         self.table_mo.setItem(row, 2, QTableWidgetItem(f"{taux:.2f}"))
 
     def _add_piece(self):
+        """
+        Modal Dialog method: '_add_piece'.
+        """
         if self.p_desig.text().strip():
             self._add_piece_row(self.p_desig.text().strip(), self.p_ref.text().strip(),
                                 self.p_qty.value(), self.p_prix.value())
             self.p_desig.clear(); self.p_ref.clear(); self.p_qty.setValue(1); self.p_prix.setValue(0)
 
     def _add_mo(self):
+        """
+        Modal Dialog method: '_add_mo'.
+        """
         if self.mo_desc.text().strip():
             self._add_mo_row(self.mo_desc.text().strip(), self.mo_duree.value(), self.mo_taux.value())
             self.mo_desc.clear(); self.mo_duree.setValue(0); self.mo_taux.setValue(0)
 
     def _save_diagnostic(self):
+        """
+        Modal Dialog method: '_save_diagnostic'.
+        """
         obs = self.diag_text.toPlainText().strip()
         or_service.ajouter_diagnostic(self.or_id, obs)
         QMessageBox.information(self, "OK", "Diagnostic enregistré.")
 
     def _save_devis(self):
+        """
+        Modal Dialog method: '_save_devis'.
+        """
         pieces = []
         for row in range(self.table_pieces.rowCount()):
             pieces.append({
@@ -225,19 +265,31 @@ class ORDetailDialog(QDialog):
         QMessageBox.information(self, "Devis", f"Devis enregistré — Total HT : {d.montant_ht:.2f} DH | TTC : {d.montant_ttc:.2f} DH")
 
     def _accepter_devis(self):
+        """
+        Modal Dialog method: '_accepter_devis'.
+        """
         or_service.accepter_devis(self.or_id)
         QMessageBox.information(self, "OK", "Devis accepté.")
 
     def _refuser_devis(self):
+        """
+        Modal Dialog method: '_refuser_devis'.
+        """
         or_service.refuser_devis(self.or_id)
         QMessageBox.information(self, "OK", "Devis refusé.")
 
     def _affecter(self):
+        """
+        Modal Dialog method: '_affecter'.
+        """
         meca_id = self.meca_combo.currentData()
         or_service.affecter_mecanicien(self.or_id, meca_id)
         QMessageBox.information(self, "OK", "Mécanicien affecté.")
 
     def _avancer(self):
+        """
+        Modal Dialog method: '_avancer'.
+        """
         try:
             o = or_service.avancer_statut(self.or_id)
             QMessageBox.information(self, "Statut", f"Nouveau statut : {STATUT_LABELS.get(o.statut, o.statut)}")
@@ -246,6 +298,9 @@ class ORDetailDialog(QDialog):
             QMessageBox.warning(self, "Attention", str(e))
 
     def _generer_facture(self):
+        """
+        Modal Dialog method: '_generer_facture'.
+        """
         try:
             if not self.client:
                 QMessageBox.warning(self, "Erreur", "Client introuvable.")
