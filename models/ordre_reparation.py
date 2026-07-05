@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Data Model representation of Ordre_reparation table
+# Représentation du modèle de données de la table Ordre_reparation
 
 from dataclasses import dataclass
 from typing import Optional
@@ -8,14 +8,28 @@ from datetime import date
 @dataclass
 class OrdreReparation:
     """
-    Data Model representing a Ordre_reparation in the application.
-    This class is a simple Python dataclass holding Ordre_reparation properties.
+    Modèle de données représentant un Ordre_reparation dans l'application.
+    Cette classe est une simple "dataclass" Python qui contient les propriétés d'un ordre de réparation.
     """
 
+    # L'identifiant du véhicule associé
     vehicule_id: int
+    
+    # Le statut actuel de l'ordre de réparation, par défaut 'reception'
     statut: str = 'reception'
+    
+    # L'identifiant du mécanicien assigné (optionnel)
     mecanicien_id: Optional[int] = None
+    
+    # La date d'entrée du véhicule à l'atelier (optionnelle)
     date_entree: Optional[date] = None
+    
+    # La date de sortie du véhicule de l'atelier (optionnelle)
     date_sortie: Optional[date] = None
+    
+    # Une description du problème ou des travaux à effectuer (optionnelle)
     description: Optional[str] = None
+    
+    # L'identifiant unique de l'ordre de réparation (optionnel)
     id: Optional[int] = None
+

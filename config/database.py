@@ -3,26 +3,28 @@ import os
 import psycopg2
 from dotenv import load_dotenv
 
-# Check if application runs inside PyInstaller compiled environment
+# Vérifie si l'application s'exécute dans un environnement compilé par PyInstaller
+# Cela permet de savoir si on est en mode développement ou en mode exécutable
 if getattr(sys, 'frozen', False):
-    # Running as Compiled EXE: look for .env in same directory as the executable
+    # En cours d'exécution en tant qu'exécutable compilé : cherche le fichier .env dans le même dossier que l'exécutable
     dotenv_path = os.path.join(os.path.dirname(sys.executable), '.env')
 else:
-    # Running in Development: look for .env in the project root directory
+    # En cours d'exécution en mode développement : cherche le fichier .env dans le dossier racine du projet
     dotenv_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env')
 
-# Load connection settings from the identified .env file
+# Charge les paramètres de connexion depuis le fichier .env identifié
 load_dotenv(dotenv_path)
 
 def get_connection():
     """
-    Creates and returns a new connection to the PostgreSQL database.
-    Reads credentials directly from environment variables.
+    Crée et retourne une nouvelle connexion à la base de données PostgreSQL.
+    Lit les identifiants directement à partir des variables d'environnement.
     """
+    # Établit la connexion en utilisant les informations de la base de données
     return psycopg2.connect(
-        host=os.getenv("DB_HOST"),
-        port=os.getenv("DB_PORT"),
-        dbname=os.getenv("DB_NAME"),
-        user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASSWORD")
+        host=os.getenv("DB_HOST"), # L'adresse de la base de données
+        port=os.getenv("DB_PORT"), # Le port de connexion
+        dbname=os.getenv("DB_NAME"), # Le nom de la base de données
+        user=os.getenv("DB_USER"), # Le nom d'utilisateur pour se connecter
+        password=os.getenv("DB_PASSWORD") # Le mot de passe de connexion
     )
