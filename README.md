@@ -53,7 +53,7 @@ cd garage_app
 ### 2. Installer les dépendances Python
 
 ```bash
-pip install pyqt6 psycopg2-binary python-dotenv reportlab
+pip install -r requirements.txt
 ```
 
 ### 3. Configurer la base de données
@@ -70,10 +70,10 @@ CREATE DATABASE garage_db
 Puis exécuter le script de création des tables :
 
 ```bash
-psql -U postgres -d garage_db -f migrations/sql_querry.sql
+psql -U postgres -d garage_db -f migrations/init_db.sql
 ```
 
-Ou ouvrir `migrations/sql_querry.sql` dans pgAdmin et l'exécuter manuellement.
+Ou ouvrir `migrations/init_db.sql` dans pgAdmin et l'exécuter manuellement.
 
 ### 4. Configurer les variables d'environnement
 
@@ -153,7 +153,7 @@ garage_app/
 │       └── theme.qss              # Thème sombre (palette industrielle)
 │
 ├── migrations/
-│   └── sql_querry.sql             # Script de création des tables PostgreSQL
+│   └── init_db.sql             # Script de création des tables PostgreSQL
 │
 └── output/                        # PDF générés (créé automatiquement)
 ```
