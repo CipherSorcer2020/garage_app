@@ -4,7 +4,7 @@
 
 # Importation des widgets nécessaires de l'interface graphique PyQt6
 from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QFormLayout, QComboBox,
-                              QTextEdit, QDialogButtonBox, QLabel)
+                              QTextEdit, QDialogButtonBox, QLabel, QSpinBox)
 # Importation des dépôts (repositories) pour accéder aux données des véhicules et clients
 from repositories import vehicule_repo, client_repo
 
@@ -25,6 +25,8 @@ class ORDialog(QDialog):
         # Initialisation des attributs de l'ordre de réparation
         self.vehicule_id = None
         self.description = None
+        self.kilometrage = None
+        self.niveau_carburant = None
         # Appel de la méthode pour construire l'interface de la fenêtre
         self._build()
 
@@ -60,9 +62,21 @@ class ORDialog(QDialog):
         self.desc.setPlaceholderText("Description du problème signalé par le client…")
         # Limitation de la hauteur de la zone de texte à 100 pixels
         self.desc.setMaximumHeight(100)
+        
+        # Kilométrage
+        self.kilo_spin = QSpinBox()
+        self.kilo_spin.setRange(0, 1000000)
+        self.kilo_spin.setSuffix(" km")
+        self.kilo_spin.setSpecialValueText("Non renseigné")
+        
+        # Niveau de carburant
+        self.carburant_combo = QComboBox()
+        self.carburant_combo.addItems(["", "Vide", "1/4", "1/2", "3/4", "Plein"])
 
         # Ajout de la liste déroulante au formulaire avec le label "Véhicule *"
         form.addRow("Véhicule *", self.vehicule_combo)
+        form.addRow("Kilométrage", self.kilo_spin)
+        form.addRow("Niveau Carburant", self.carburant_combo)
         # Ajout de la zone de texte au formulaire avec le label "Description"
         form.addRow("Description", self.desc)
         # Ajout du layout formulaire au layout principal de la fenêtre
@@ -93,6 +107,9 @@ class ORDialog(QDialog):
         self.vehicule_id = self.vehicule_combo.currentData()
         # Récupération du texte de la description, ou None s'il est vide
         self.description = self.desc.toPlainText().strip() or None
+        
+        self.kilometrage = self.kilo_spin.value() or None
+        self.niveau_carburant = self.carburant_combo.currentText().strip() or None
         # Vérification qu'un véhicule a bien été sélectionné
         if not self.vehicule_id:
             # Si non, on affiche un message d'erreur

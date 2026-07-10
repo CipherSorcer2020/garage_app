@@ -32,6 +32,9 @@ class VehiculeWidget(QWidget):
         self.refresh()
 
     def _build(self):
+        btn_historique = QPushButton("Historique")
+        btn_historique.clicked.connect(self._historique)
+        actions.addWidget(btn_historique)  # avant btn_edit
         """
         UI lifecycle method: '_build'.
         Assemble les différents éléments (barre de recherche, tableau, boutons).
@@ -225,4 +228,16 @@ class VehiculeWidget(QWidget):
             # ... efface le véhicule de la base.
             vehicule_repo.delete(vid)
             # Rafraîchit la liste.
-            self.refresh()
+            self.refresh()
+    def _historique(self):
+        """Ouvre le dialog d'historique pour le vehicule selectionne."""
+        vid = self._selected_id()
+        if not vid:
+            return
+        v = vehicule_repo.get_by_id(vid)
+        client = self._clients.get(v.client_id)
+        if not client:
+            return
+        from ui.dialogs.historique_vehicule_dialog import HistoriqueVehiculeDialog
+        dlg = HistoriqueVehiculeDialog(v, client, self)
+        dlg.exec()

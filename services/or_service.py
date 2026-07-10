@@ -35,12 +35,12 @@ def statut_suivant(statut_actuel: str) -> str | None:
     # S'il n'y a pas de statut suivant (ou si le statut est inconnu), on ne retourne rien
     return None
 
-def creer_or(vehicule_id: int, description: str = None) -> OrdreReparation:
+def creer_or(vehicule_id: int, description: str = None, kilometrage: int = None, niveau_carburant: str = None) -> OrdreReparation:
     """
     Crée un nouvel Ordre de Réparation pour un véhicule donné.
     """
     # Crée un nouvel objet OrdreReparation avec le statut initial 'reception'
-    o = OrdreReparation(vehicule_id=vehicule_id, statut='reception', description=description)
+    o = OrdreReparation(vehicule_id=vehicule_id, statut='reception', description=description, kilometrage=kilometrage, niveau_carburant=niveau_carburant)
     # Le sauvegarde dans la base de données et le retourne
     return or_repo.create(o)
 

@@ -30,6 +30,12 @@ class OrdreReparation:
     # Une description du problème ou des travaux à effectuer (optionnelle)
     description: Optional[str] = None
     
+    # Le kilométrage du véhicule à la réception (optionnel)
+    kilometrage: Optional[int] = None
+    
+    # Le niveau de carburant à la réception (optionnel)
+    niveau_carburant: Optional[str] = None
+    
     # L'identifiant unique de l'ordre de réparation (optionnel)
     id: Optional[int] = None
 

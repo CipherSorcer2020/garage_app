@@ -2,7 +2,22 @@ import sys
 import os
 import psycopg2
 from dotenv import load_dotenv
+from contextlib import contextmanager
 
+@contextmanager
+def get_db():
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        yield cur, conn
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        cur.close()
+        conn.close()
+        
 # Vérifie si l'application s'exécute dans un environnement compilé par PyInstaller
 # Cela permet de savoir si on est en mode développement ou en mode exécutable
 if getattr(sys, 'frozen', False):
@@ -28,3 +43,4 @@ def get_connection():
         user=os.getenv("DB_USER"), # Le nom d'utilisateur pour se connecter
         password=os.getenv("DB_PASSWORD") # Le mot de passe de connexion
     )
+

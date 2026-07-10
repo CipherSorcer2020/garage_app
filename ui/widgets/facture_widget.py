@@ -242,7 +242,7 @@ class FactureWidget(QWidget):
             # Récupère la liste des interventions (Main d'Oeuvre - MO).
             mos = ligne_mo_repo.get_by_or(f.or_id)
             # Appelle le service pour générer le document PDF et obtient le chemin du fichier.
-            path = pdf_service.generer_facture_pdf(f, client, vehicule, pieces, mos)
+            path = pdf_service.generer_facture_pdf(f, client, vehicule, pieces, mos, o)
             # Affiche un message de succès avec le chemin du fichier.
             QMessageBox.information(self, "PDF généré", f"Facture enregistrée :\n{path}")
         except Exception as e:

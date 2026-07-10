@@ -202,7 +202,7 @@ class ORWidget(QWidget):
         # Si on valide le formulaire...
         if dlg.exec():
             # Appelle le service pour créer un nouvel Ordre de Réparation.
-            or_service.creer_or(dlg.vehicule_id, dlg.description)
+            or_service.creer_or(dlg.vehicule_id, dlg.description, dlg.kilometrage, dlg.niveau_carburant)
             # Met à jour la liste affichée.
             self.refresh()
 
