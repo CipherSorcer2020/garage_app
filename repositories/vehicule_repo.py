@@ -8,19 +8,22 @@ from models.vehicule import Vehicule
 def _row_to_vehicule(r):
     """
     Transforme une ligne de résultat SQL en un objet Vehicule.
+    Le 9e champ (index 8) est technicien_id (peut etre NULL).
     """
-    # Initialise un Vehicule avec toutes ses caractéristiques (immatriculation, VIN, modèle, etc.)
-    return Vehicule(id=r[0], client_id=r[1], immatriculation=r[2], vin=r[3], marque=r[4], modele=r[5], annee=r[6], kilometrage=r[7])
+    return Vehicule(
+        id=r[0], client_id=r[1], immatriculation=r[2], vin=r[3],
+        marque=r[4], modele=r[5], annee=r[6], kilometrage=r[7],
+        technicien_id=r[8] if len(r) > 8 else None,
+    )
 
 def get_all():
     """
     Récupère tous les véhicules enregistrés, triés par immatriculation.
     """
     with get_db() as (cur, conn):
-        # Récupération de tous les véhicules
-        cur.execute("SELECT id, client_id, immatriculation, vin, marque, modele, annee, kilometrage FROM vehicules ORDER BY immatriculation")
+        # Recuperation de tous les vehicules (avec technicien_id)
+        cur.execute("SELECT id, client_id, immatriculation, vin, marque, modele, annee, kilometrage, technicien_id FROM vehicules ORDER BY immatriculation")
         rows = cur.fetchall()
-    # Construit la liste d'objets Vehicule
     return [_row_to_vehicule(r) for r in rows]
 
 def get_by_id(vehicule_id: int):
@@ -28,10 +31,9 @@ def get_by_id(vehicule_id: int):
     Récupère un véhicule via son identifiant (ID).
     """
     with get_db() as (cur, conn):
-        # Recherche du véhicule par ID
-        cur.execute("SELECT id, client_id, immatriculation, vin, marque, modele, annee, kilometrage FROM vehicules WHERE id=%s", (vehicule_id,))
+        # Recherche du vehicule par ID (avec technicien_id)
+        cur.execute("SELECT id, client_id, immatriculation, vin, marque, modele, annee, kilometrage, technicien_id FROM vehicules WHERE id=%s", (vehicule_id,))
         r = cur.fetchone()
-    # Retourne le véhicule ou None s'il n'existe pas
     return _row_to_vehicule(r) if r else None
 
 def get_by_client(client_id: int):
@@ -39,10 +41,9 @@ def get_by_client(client_id: int):
     Récupère la liste des véhicules appartenant à un client spécifique.
     """
     with get_db() as (cur, conn):
-        # Filtre les véhicules par l'identifiant du client
-        cur.execute("SELECT id, client_id, immatriculation, vin, marque, modele, annee, kilometrage FROM vehicules WHERE client_id=%s", (client_id,))
+        # Filtre les vehicules par client (avec technicien_id)
+        cur.execute("SELECT id, client_id, immatriculation, vin, marque, modele, annee, kilometrage, technicien_id FROM vehicules WHERE client_id=%s", (client_id,))
         rows = cur.fetchall()
-    # Renvoie la flotte de véhicules du client
     return [_row_to_vehicule(r) for r in rows]
 
 def create(v: Vehicule):
@@ -64,10 +65,10 @@ def update(v: Vehicule):
     Met à jour les informations d'un véhicule existant (kilométrage, etc.).
     """
     with get_db() as (cur, conn):
-        # Effectue un UPDATE sur tous les champs du véhicule correspondant à l'ID
+        # Met a jour tous les champs du vehicule (y compris technicien_id)
         cur.execute(
-            "UPDATE vehicules SET client_id=%s, immatriculation=%s, vin=%s, marque=%s, modele=%s, annee=%s, kilometrage=%s WHERE id=%s",
-            (v.client_id, v.immatriculation, v.vin, v.marque, v.modele, v.annee, v.kilometrage, v.id)
+            "UPDATE vehicules SET client_id=%s, immatriculation=%s, vin=%s, marque=%s, modele=%s, annee=%s, kilometrage=%s, technicien_id=%s WHERE id=%s",
+            (v.client_id, v.immatriculation, v.vin, v.marque, v.modele, v.annee, v.kilometrage, v.technicien_id, v.id)
         )
 
 def delete(vehicule_id: int):

@@ -4,9 +4,58 @@
 
 # Importation des widgets nécessaires de l'interface graphique PyQt6
 from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QFormLayout, QComboBox,
-                              QTextEdit, QDialogButtonBox, QLabel, QSpinBox)
+                              QTextEdit, QDialogButtonBox, QLabel, QSpinBox,
+                              QPushButton, QWidget)
 # Importation des dépôts (repositories) pour accéder aux données des véhicules et clients
+from PyQt6.QtGui import QPainter, QPen, QPixmap, QColor, QMouseEvent
+from PyQt6.QtCore import Qt, QByteArray, QBuffer, QIODevice
 from repositories import vehicule_repo, client_repo
+
+class SignaturePad(QWidget):
+    """A simple drawable area for capturing a client signature."""
+    def __init__(self, parent=None, width=300, height=150):
+        super().__init__(parent)
+        self.setFixedSize(width, height)
+        self._pixmap = QPixmap(width, height)
+        self._pixmap.fill(Qt.GlobalColor.white)
+        self._last_point = None
+
+    def mousePressEvent(self, event: QMouseEvent):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self._last_point = event.position().toPoint()
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event: QMouseEvent):
+        if self._last_point is not None:
+            painter = QPainter(self._pixmap)
+            pen = QPen(QColor('black'), 2)
+            painter.setPen(pen)
+            current_point = event.position().toPoint()
+            painter.drawLine(self._last_point, current_point)
+            painter.end()
+            self._last_point = current_point
+            self.update()
+        super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event: QMouseEvent):
+        self._last_point = None
+        super().mouseReleaseEvent(event)
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.drawPixmap(0, 0, self._pixmap)
+
+    def clear(self):
+        """Erase the current drawing."""
+        self._pixmap.fill(Qt.GlobalColor.white)
+        self.update()
+
+    def get_image_bytes(self) -> bytes:
+        """Return the signature image as PNG bytes."""
+        buffer = QBuffer()
+        buffer.open(QIODevice.OpenModeFlag.WriteOnly)
+        self._pixmap.save(buffer, "PNG")
+        return bytes(buffer.data())
 
 
 # Classe ORDialog pour afficher la boîte de dialogue d'un Ordre de Réparation (OR)
@@ -27,6 +76,9 @@ class ORDialog(QDialog):
         self.description = None
         self.kilometrage = None
         self.niveau_carburant = None
+        self.visual_condition = None
+        self.accessoires = None
+        self.signature = None
         # Appel de la méthode pour construire l'interface de la fenêtre
         self._build()
 
@@ -79,6 +131,24 @@ class ORDialog(QDialog):
         form.addRow("Niveau Carburant", self.carburant_combo)
         # Ajout de la zone de texte au formulaire avec le label "Description"
         form.addRow("Description", self.desc)
+        # Visual condition
+        self.visual_condition_edit = QTextEdit()
+        self.visual_condition_edit.setPlaceholderText("État visuel du véhicule…")
+        self.visual_condition_edit.setMaximumHeight(80)
+        form.addRow("État visuel", self.visual_condition_edit)
+        # Accessoires
+        self.accessoires_edit = QTextEdit()
+        self.accessoires_edit.setPlaceholderText("Accessoires laissés dans le véhicule…")
+        self.accessoires_edit.setMaximumHeight(80)
+        form.addRow("Accessoires", self.accessoires_edit)
+        # Signature pad
+        self.signature_pad = SignaturePad()
+        self.clear_sig_btn = QPushButton("Effacer")
+        self.clear_sig_btn.clicked.connect(self.signature_pad.clear)
+        sig_layout = QVBoxLayout()
+        sig_layout.addWidget(self.signature_pad)
+        sig_layout.addWidget(self.clear_sig_btn)
+        form.addRow("Signature", sig_layout)
         # Ajout du layout formulaire au layout principal de la fenêtre
         layout.addLayout(form)
 
@@ -110,6 +180,9 @@ class ORDialog(QDialog):
         
         self.kilometrage = self.kilo_spin.value() or None
         self.niveau_carburant = self.carburant_combo.currentText().strip() or None
+        self.visual_condition = self.visual_condition_edit.toPlainText().strip() or None
+        self.accessoires = self.accessoires_edit.toPlainText().strip() or None
+        self.signature = self.signature_pad.get_image_bytes() if self.signature_pad else None
         # Vérification qu'un véhicule a bien été sélectionné
         if not self.vehicule_id:
             # Si non, on affiche un message d'erreur

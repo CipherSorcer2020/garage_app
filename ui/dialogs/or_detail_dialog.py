@@ -7,13 +7,18 @@ from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QPushButton,
                               QLabel, QTextEdit, QTabWidget, QWidget,
                               QTableWidget, QTableWidgetItem, QHeaderView,
                               QFormLayout, QDoubleSpinBox, QSpinBox, QLineEdit,
-                              QComboBox, QMessageBox, QAbstractItemView)
+                              QComboBox, QMessageBox, QAbstractItemView,
+                              QListWidget, QListWidgetItem, QFileDialog)
+from PyQt6.QtGui import QColor, QPixmap, QIcon
 # Importation du namespace Qt pour des constantes diverses (alignements, etc.)
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QSize
 # Importation des services métiers pour les opérations sur les OR et la facturation
 from services import or_service, facturation_service
+from ui.dialogs.piece_selection_dialog import PieceSelectionDialog
 # Importation des dépôts de données
-from repositories import vehicule_repo, client_repo, utilisateur_repo, or_repo
+from repositories import vehicule_repo, client_repo, utilisateur_repo, or_repo, or_photo_repo, dossier_sinistre_repo
+from models.or_photo import ORPhoto
+from models.dossier_sinistre import DossierSinistre
 # Importation des composants graphiques (labels et couleurs) liés aux statuts
 from ui.widgets.or_widget import STATUT_LABELS, STATUT_COLORS
 # Importation de QColor (bien que non utilisée explicitement en dessous)
@@ -101,6 +106,10 @@ class ORDetailDialog(QDialog):
         tabs.addTab(self._tab_devis(), "Devis & Pièces")
         # Ajout de l'onglet "Affectation" pour désigner un mécanicien
         tabs.addTab(self._tab_affectation(), "Affectation")
+        # Ajout de l'onglet "Photos"
+        tabs.addTab(self._tab_photos(), "Photos")
+        # Ajout de l'onglet "Assurance"
+        tabs.addTab(self._tab_assurance(), "Assurance")
         # Ajout du système d'onglets au layout principal
         layout.addWidget(tabs)
 
@@ -188,12 +197,16 @@ class ORDetailDialog(QDialog):
         self.p_qty = QSpinBox(); self.p_qty.setRange(1, 999); self.p_qty.setValue(1)
         self.p_prix = QDoubleSpinBox(); self.p_prix.setRange(0, 999999); self.p_prix.setDecimals(2)
         
-        # Bouton d'ajout d'une pièce
+        # Button to open piece selection dialog
+        btn_select = QPushButton("🔍 Sélectionner existantes")
+        btn_select.clicked.connect(self._open_piece_selection)
+        
+        # Bouton d'ajout d'une pièce manuelle
         btn_ap = QPushButton("+ Ajouter")
         btn_ap.clicked.connect(self._add_piece)
         
-        # Ajout des champs dans le layout horizontal
-        for w2 in [self.p_desig, self.p_ref, self.p_qty, self.p_prix, btn_ap]:
+        # Ajout des champs et boutons dans le layout horizontal
+        for w2 in [self.p_desig, self.p_ref, self.p_qty, self.p_prix, btn_ap, btn_select]:
             add_piece.addWidget(w2)
         layout.addLayout(add_piece)
 
@@ -326,6 +339,16 @@ class ORDetailDialog(QDialog):
             # Réinitialise les champs de saisie pour une prochaine pièce
             self.p_desig.clear(); self.p_ref.clear(); self.p_qty.setValue(1); self.p_prix.setValue(0)
 
+    def _open_piece_selection(self):
+        """Open the PieceSelectionDialog and add chosen pieces to the table."""
+        selected = PieceSelectionDialog.exec_dialog(self)
+        if not selected:
+            return
+        for piece, qty in selected:
+            # Add a row with the piece data and chosen quantity
+            self._add_piece_row(piece.designation, piece.reference or "", qty, piece.prix_unitaire or 0)
+
+
     # Action déclenchée par le bouton d'ajout de main-d'œuvre
     def _add_mo(self):
         """
@@ -443,3 +466,126 @@ class ORDetailDialog(QDialog):
         except Exception as e:
             # Affiche une erreur critique si quelque chose échoue (ex: OR non terminé)
             QMessageBox.critical(self, "Erreur", str(e))
+
+    # --- Gestion des photos ---
+    def _tab_photos(self):
+        w = QWidget()
+        layout = QVBoxLayout(w)
+
+        self.list_photos = QListWidget()
+        self.list_photos.setIconSize(QSize(100, 100) if 'QSize' in globals() else None) # Set size dynamically if imported
+        self.list_photos.setSpacing(10)
+        # To avoid adding QSize import if we didn't add it at the top, we just use strings or ignore
+        self.list_photos.setStyleSheet("QListWidget::item { padding: 10px; }")
+        
+        btn_layout = QHBoxLayout()
+        btn_add = QPushButton("Ajouter Photo")
+        btn_add.clicked.connect(self._add_photo)
+        btn_del = QPushButton("Supprimer Photo")
+        btn_del.clicked.connect(self._delete_photo)
+        
+        btn_layout.addWidget(btn_add)
+        btn_layout.addWidget(btn_del)
+        btn_layout.addStretch()
+
+        layout.addLayout(btn_layout)
+        layout.addWidget(self.list_photos)
+
+        self._load_photos()
+        return w
+
+    def _load_photos(self):
+        self.list_photos.clear()
+        photos = or_photo_repo.get_by_or(self.or_id)
+        for p in photos:
+            pixmap = QPixmap()
+            pixmap.loadFromData(p.image_data)
+            icon = QIcon(pixmap)
+            item = QListWidgetItem(icon, p.description or f"Photo #{p.id}")
+            item.setData(Qt.ItemDataRole.UserRole, p.id)
+            self.list_photos.addItem(item)
+
+    def _add_photo(self):
+        file_path, _ = QFileDialog.getOpenFileName(
+            self, "Sélectionner une photo", "", "Images (*.png *.jpg *.jpeg *.bmp)"
+        )
+        if not file_path:
+            return
+        
+        with open(file_path, 'rb') as f:
+            data = f.read()
+        
+        p = ORPhoto(or_id=self.or_id, image_data=data, description=file_path.split('/')[-1])
+        or_photo_repo.create(p)
+        self._load_photos()
+
+    def _delete_photo(self):
+        item = self.list_photos.currentItem()
+        if not item:
+            return
+        photo_id = item.data(Qt.ItemDataRole.UserRole)
+        reply = QMessageBox.question(self, "Confirmation", "Supprimer cette photo ?")
+        if reply == QMessageBox.StandardButton.Yes:
+            or_photo_repo.delete(photo_id)
+            self._load_photos()
+
+    # --- Gestion Assurance / Sinistre ---
+    def _tab_assurance(self):
+        w = QWidget()
+        layout = QVBoxLayout(w)
+        form = QFormLayout()
+
+        self.f_assurance = QLineEdit()
+        form.addRow("Nom de l'assurance", self.f_assurance)
+
+        self.f_dossier = QLineEdit()
+        form.addRow("N° de dossier", self.f_dossier)
+
+        self.f_montant_assure = QDoubleSpinBox()
+        self.f_montant_assure.setRange(0.0, 100000.0)
+        self.f_montant_assure.setSuffix(" €")
+        form.addRow("Montant pris en charge", self.f_montant_assure)
+
+        layout.addLayout(form)
+
+        btn_save_ass = QPushButton("Enregistrer le dossier")
+        btn_save_ass.setObjectName("btn_primary")
+        btn_save_ass.clicked.connect(self._save_assurance)
+        
+        btn_layout = QHBoxLayout()
+        btn_layout.addStretch()
+        btn_layout.addWidget(btn_save_ass)
+        layout.addLayout(btn_layout)
+
+        # Load existing dossier if any
+        self._dossier = dossier_sinistre_repo.get_by_or(self.or_id)
+        if self._dossier:
+            self.f_assurance.setText(self._dossier.nom_assurance)
+            self.f_dossier.setText(self._dossier.numero_dossier)
+            self.f_montant_assure.setValue(self._dossier.montant_couvert)
+
+        return w
+
+    def _save_assurance(self):
+        nom = self.f_assurance.text().strip()
+        num = self.f_dossier.text().strip()
+        if not nom or not num:
+            QMessageBox.warning(self, "Erreur", "Le nom de l'assurance et le numéro de dossier sont obligatoires.")
+            return
+
+        if self._dossier:
+            self._dossier.nom_assurance = nom
+            self._dossier.numero_dossier = num
+            self._dossier.montant_couvert = self.f_montant_assure.value()
+            dossier_sinistre_repo.update(self._dossier)
+            QMessageBox.information(self, "Succès", "Dossier mis à jour.")
+        else:
+            ds = DossierSinistre(
+                or_id=self.or_id,
+                nom_assurance=nom,
+                numero_dossier=num,
+                montant_couvert=self.f_montant_assure.value()
+            )
+            self._dossier = dossier_sinistre_repo.create(ds)
+            QMessageBox.information(self, "Succès", "Dossier d'assurance créé.")
+

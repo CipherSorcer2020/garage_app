@@ -1,20 +1,23 @@
 # Garage App — Système de Gestion d'Atelier Automobile
 
 Application desktop de gestion d'atelier pour garage automobile, développée en Python avec PyQt6 et PostgreSQL.
+Ce projet couvre 4 phases complètes, allant de la gestion basique d'atelier jusqu'au pilotage d'entreprise et CRM.
 
 ---
 
 ## Fonctionnalités
 
-- **Gestion des clients** — ajout, modification, suppression, recherche
-- **Gestion des véhicules** — liés aux clients, validation de l'immatriculation marocaine
-- **Ordres de Réparation (OR)** — workflow complet en 9 étapes
-- **Devis** — saisie libre des pièces et main d'œuvre, calcul automatique HT/TTC
-- **Facturation** — génération automatique, encaissement, export PDF
-- **Tableau de bord** — indicateurs clés en temps réel
+- **Gestion des clients et véhicules** — Fiches clients détaillées, validation d'immatriculation marocaine.
+- **Workflow Ordres de Réparation (OR)** — 9 étapes clés : de la réception du véhicule à la facturation.
+- **Devis et Facturation** — Saisie libre des pièces et main d'œuvre, calcul automatique HT/TTC, génération et export PDF.
+- **Achats et Stocks (Fournisseurs)** — Création de commandes, réception et mise en stock, gestion des retours et garanties pièces.
+- **CRM et Agenda** — Suivi des notifications clients (SMS/Email), gestion des rendez-vous et planification.
+- **Assurances** — Gestion des dossiers sinistres liés aux ordres de réparation.
+- **Audit et Traçabilité** — Journalisation complète de toutes les actions (création, modification, suppression).
+- **Tableau de bord** — Indicateurs clés de performance en temps réel.
 
 ### Workflow OR
-```
+```text
 Réception → Diagnostic → Devis → Accord devis → Affectation mécanicien
          → En cours → Test → Facturé → Livré
 ```
@@ -23,13 +26,14 @@ Réception → Diagnostic → Devis → Accord devis → Affectation mécanicien
 
 ## Stack technique
 
-| Composant     | Technologie         |
-|---------------|---------------------|
-| Interface     | PyQt6               |
-| Base de données | PostgreSQL        |
-| Connecteur BDD | psycopg2-binary   |
-| PDF           | ReportLab           |
-| Config        | python-dotenv       |
+| Composant       | Technologie         |
+|-----------------|---------------------|
+| Interface       | PyQt6               |
+| Base de données | PostgreSQL          |
+| Connecteur BDD  | psycopg2-binary     |
+| PDF             | ReportLab           |
+| Config          | python-dotenv       |
+| CI/CD           | GitHub Actions      |
 
 ---
 
@@ -46,7 +50,7 @@ Réception → Diagnostic → Devis → Accord devis → Affectation mécanicien
 ### 1. Cloner le projet
 
 ```bash
-git clone https://github.com/TON_USERNAME/garage_app.git
+git clone https://github.com/VOTRE_USERNAME/garage_app.git
 cd garage_app
 ```
 
@@ -67,13 +71,11 @@ CREATE DATABASE garage_db
     LC_CTYPE = 'French_France.1252';
 ```
 
-Puis exécuter le script de création des tables :
+Puis exécuter le script complet de création des tables :
 
 ```bash
-psql -U postgres -d garage_db -f migrations/init_db.sql
+psql -U postgres -d garage_db -f migration/init_db.sql
 ```
-
-Ou ouvrir `migrations/init_db.sql` dans pgAdmin et l'exécuter manuellement.
 
 ### 4. Configurer les variables d'environnement
 
@@ -84,13 +86,12 @@ DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=garage_db
 DB_USER=postgres
-DB_PASSWORD=ton_mot_de_passe
+DB_PASSWORD=votre_mot_de_passe
 ```
 
 ### 5. Lancer l'application
 
 ```bash
-cd garage_app
 python main.py
 ```
 
@@ -98,7 +99,7 @@ python main.py
 
 ## Structure du projet
 
-```
+```text
 garage_app/
 │
 ├── main.py                        # Point d'entrée de l'application
@@ -109,116 +110,81 @@ garage_app/
 │   └── database.py                # Connexion PostgreSQL via psycopg2
 │
 ├── models/                        # Classes de données (dataclasses)
-│   ├── client.py
-│   ├── vehicule.py
-│   ├── ordre_reparation.py
-│   ├── diagnostic.py
-│   ├── devis.py
-│   ├── ligne_piece.py
-│   ├── ligne_main_oeuvre.py
-│   ├── facture.py
-│   └── utilisateur.py
+│   ├── client.py, vehicule.py
+│   ├── ordre_reparation.py, diagnostic.py, devis.py, facture.py
+│   ├── ligne_piece.py, ligne_main_oeuvre.py
+│   ├── technicien.py, utilisateur.py
+│   ├── fournisseur.py, commande_fournisseur.py, piece.py
+│   ├── retour_piece.py
+│   ├── notification.py, rendez_vous.py, dossier_sinistre.py
+│   └── audit_log.py
 │
 ├── repositories/                  # Accès aux données (requêtes SQL)
-│   ├── client_repo.py
-│   ├── vehicule_repo.py
-│   ├── or_repo.py
-│   ├── diagnostic_repo.py
-│   ├── devis_repo.py
-│   ├── ligne_piece_repo.py
-│   ├── ligne_mo_repo.py
-│   ├── facture_repo.py
-│   └── utilisateur_repo.py
+│   ├── client_repo.py, vehicule_repo.py, or_repo.py
+│   ├── diagnostic_repo.py, devis_repo.py, facture_repo.py
+│   ├── technicien_repo.py, utilisateur_repo.py
+│   ├── fournisseur_repo.py, commande_fournisseur_repo.py, piece_repo.py
+│   ├── retour_piece_repo.py
+│   ├── notification_repo.py, rendez_vous_repo.py, dossier_sinistre_repo.py
+│   └── audit_log_repo.py
 │
-├── services/                      # Logique métier
-│   ├── or_service.py              # Workflow OR, devis, affectation
-│   ├── facturation_service.py     # Génération et encaissement factures
-│   └── pdf_service.py             # Export PDF (factures et devis)
+├── services/                      # Logique métier et orchestrations
+│   ├── or_service.py              # Workflow OR complet
+│   ├── facturation_service.py     # Gestion des factures
+│   ├── pdf_service.py             # Création PDF
+│   ├── commande_fournisseur_service.py
+│   ├── retour_piece_service.py
+│   └── audit_log_service.py
 │
-├── ui/                            # Interface PyQt6
+├── ui/                            # Interface Utilisateur PyQt6
 │   ├── windows/
-│   │   └── main_window.py         # Fenêtre principale + navigation
-│   ├── widgets/
-│   │   ├── dashboard_widget.py    # Tableau de bord
-│   │   ├── client_widget.py       # Page clients
-│   │   ├── vehicule_widget.py     # Page véhicules
-│   │   ├── or_widget.py           # Page ordres de réparation
-│   │   └── facture_widget.py      # Page facturation
-│   ├── dialogs/
-│   │   ├── client_dialog.py       # Formulaire client
-│   │   ├── vehicule_dialog.py     # Formulaire véhicule
-│   │   ├── or_dialog.py           # Formulaire nouvel OR
-│   │   └── or_detail_dialog.py    # Détail OR (diagnostic, devis, affectation)
+│   │   └── main_window.py         # Fenêtre principale et navigation
+│   ├── widgets/                   # Vues des pages (Tableau de bord, Clients, etc.)
+│   ├── dialogs/                   # Formulaires modaux (Nouvel OR, Nouveau client, etc.)
 │   └── styles/
-│       └── theme.qss              # Thème sombre (palette industrielle)
+│       └── theme.qss              # Thème esthétique (Dark Mode Premium)
 │
-├── migrations/
-│   └── init_db.sql             # Script de création des tables PostgreSQL
+├── migration/
+│   └── init_db.sql                # Script SQL unique pour créer toutes les tables
 │
-└── output/                        # PDF générés (créé automatiquement)
+├── tests/                         # Tests unitaires
+│   └── test_retour_piece_repo.py
+│
+├── .github/workflows/             # Intégration continue (CI)
+│   └── ci.yml
+│
+└── output/                        # PDF générés
 ```
 
 ---
 
-## Utilisation
+## Utilisation Courante
 
 ### Créer un premier dossier complet
 
-1. **Clients** → cliquer `+ Nouveau client` → remplir le formulaire
-2. **Véhicules** → cliquer `+ Nouveau véhicule` → choisir le client → saisir l'immatriculation (format : `12345-A-5`)
-3. **Ordres de réparation** → cliquer `+ Nouvel OR` → choisir le véhicule
-4. **Ouvrir l'OR** → double-clic ou bouton `Ouvrir / Avancer`
-   - Onglet **Diagnostic** → saisir les observations → `Enregistrer diagnostic`
-   - Onglet **Devis & Pièces** → ajouter les pièces et la main d'œuvre → `Enregistrer le devis`
-   - Cliquer `Accepter devis` si le client valide
-   - Onglet **Affectation** → choisir un mécanicien → `Affecter`
-   - Bouton `▶ Avancer le statut` pour progresser dans le workflow
-   - Bouton `Générer facture` quand le travail est terminé
-5. **Facturation** → sélectionner la facture → `Marquer payée` → choisir le mode → `Générer PDF`
+1. **Clients** → Cliquer `+ Nouveau client` → Remplir le formulaire.
+2. **Véhicules** → Cliquer `+ Nouveau véhicule` → Choisir le client → Saisir l'immatriculation.
+3. **Ordres de réparation** → Cliquer `+ Nouvel OR` → Choisir le véhicule.
+4. **Ouvrir l'OR** → Double-clic sur l'enregistrement.
+   - Onglet **Diagnostic** → Saisir les observations.
+   - Onglet **Devis & Pièces** → Ajouter les pièces et la main-d'œuvre.
+   - Cliquer **Accepter devis** une fois validé.
+   - Bouton **▶ Avancer le statut** pour progresser jusqu'à la facturation.
+5. **Facturation** → Sélectionner la facture → **Marquer payée** → **Générer PDF**.
 
 ### Format immatriculation
 
-Le système accepte uniquement le format marocain :
-
-```
+Le système valide nativement le format marocain :
+```text
 NNNNN-L-RR
 ```
 - `NNNNN` : numéro de 1 à 99999
 - `L` : une lettre (série)
 - `RR` : région de 1 à 88
-
-Exemples valides : `12345-A-5`, `100-B-22`, `1-A-1`, `99999-Z-88`
-
-### PDF générés
-
-Les PDF sont sauvegardés dans le dossier `output/` à la racine du projet :
-- Factures : `output/F-2025-0001.pdf`
-- Devis : `output/DEVIS-OR1.pdf`
-
----
-
-## Variables d'environnement
-
-| Variable      | Description               | Valeur par défaut |
-|---------------|---------------------------|-------------------|
-| `DB_HOST`     | Hôte PostgreSQL           | `localhost`       |
-| `DB_PORT`     | Port PostgreSQL           | `5432`            |
-| `DB_NAME`     | Nom de la base            | `garage_db`       |
-| `DB_USER`     | Utilisateur PostgreSQL    | `postgres`        |
-| `DB_PASSWORD` | Mot de passe              | *(obligatoire)*   |
-
----
-
-## Données de test
-
-Pour peupler la base avec des données de démonstration :
-
-```bash
-psql -U postgres -d garage_db -f migrations/seed_data.sql
-```
+*(Exemple valide : `12345-A-5`)*
 
 ---
 
 ## Licence
 
-Projet de stage — Usage interne.
+Projet développé dans le cadre d'un stage — Usage interne.

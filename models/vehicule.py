@@ -31,7 +31,10 @@ class Vehicule:
     
     # Le kilométrage du véhicule (optionnel)
     kilometrage: Optional[int] = None
-    
+
+    # L'identifiant unique du technicien responsable du vehicule (optionnel)
+    technicien_id: Optional[int] = None
+
     # L'identifiant unique du véhicule dans la base de données (optionnel)
     id: Optional[int] = None
 

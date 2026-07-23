@@ -94,6 +94,16 @@ def _generer_document_pdf(doc_type, document, client, vehicule, pieces, mos, or_
             Paragraph(f"Kilométrage : {or_obj.kilometrage or '—'} km", styles['Normal']),
             Paragraph(f"Carburant : {or_obj.niveau_carburant or '—'}", styles['Normal'])
         ])
+        if or_obj.visual_condition:
+            info_data.append([Paragraph(f"État visuel : {or_obj.visual_condition}", styles['Normal']), ""])
+        if or_obj.accessoires:
+            info_data.append([Paragraph(f"Accessoires : {or_obj.accessoires}", styles['Normal']), ""])
+        if or_obj.signature:
+            from io import BytesIO
+            from reportlab.platypus import Image as RLImage
+            sig_buf = BytesIO(or_obj.signature)
+            sig_img = RLImage(sig_buf, width=50*mm, preserveAspectRatio=True)
+            info_data.append([Paragraph("Signature du client :", styles['Normal']), sig_img])
         
     t_info = Table(info_data, colWidths=[W/2, W/2])
     t_info.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'TOP'), ('TOPPADDING', (0,0),(-1,-1), 3)]))

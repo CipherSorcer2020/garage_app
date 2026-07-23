@@ -36,6 +36,15 @@ class OrdreReparation:
     # Le niveau de carburant à la réception (optionnel)
     niveau_carburant: Optional[str] = None
     
+    # Description de l'état visuel du véhicule (optionnel)
+    visual_condition: Optional[str] = None
+    
+    # Accessoires laissés dans le véhicule (optionnel)
+    accessoires: Optional[str] = None
+    
+    # Signature du client sous forme d'image base64 (optionnel)
+    signature: Optional[bytes] = None
+    
     # L'identifiant unique de l'ordre de réparation (optionnel)
     id: Optional[int] = None
 

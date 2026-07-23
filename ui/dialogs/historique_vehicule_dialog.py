@@ -17,6 +17,7 @@ from PyQt6.QtWidgets import (
     QTextEdit, QPushButton, QFrame, QScrollArea
 )
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QPixmap
 from PyQt6.QtGui import QColor
 
 import repositories.or_repo as or_repo
@@ -231,6 +232,17 @@ class HistoriqueVehiculeDialog(QDialog):
         self.tab_resume_layout.addWidget(info_row("Date entrée", o.date_entree or "—"))
         self.tab_resume_layout.addWidget(info_row("Date sortie", o.date_sortie or "—"))
         self.tab_resume_layout.addWidget(info_row("Mécanicien", meca_str))
+        if o.visual_condition:
+            self.tab_resume_layout.addWidget(info_row("État visuel", o.visual_condition))
+        if o.accessoires:
+            self.tab_resume_layout.addWidget(info_row("Accessoires", o.accessoires))
+        if o.signature:
+            sig_lbl = QLabel()
+            pix = QPixmap()
+            pix.loadFromData(o.signature)
+            sig_lbl.setPixmap(pix.scaledToWidth(200, Qt.TransformationMode.SmoothTransformation))
+            self.tab_resume_layout.addWidget(info_row("Signature", ""))
+            self.tab_resume_layout.addWidget(sig_lbl)
 
         # Description
         if o.description:

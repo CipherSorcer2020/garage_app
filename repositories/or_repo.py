@@ -18,7 +18,7 @@ def get_all():
     """
     with get_db() as (cur, conn):
         # Requête avec un tri décroissant sur la date d'entrée
-        cur.execute("SELECT id, vehicule_id, mecanicien_id, statut, date_entree, date_sortie, description, kilometrage, niveau_carburant FROM ordres_reparation ORDER BY date_entree DESC")
+        cur.execute("SELECT id, vehicule_id, mecanicien_id, statut, date_entree, date_sortie, description, kilometrage, niveau_carburant, visual_condition, accessoires, signature FROM ordres_reparation ORDER BY date_entree DESC")
         rows = cur.fetchall()
     return [_row_to_or(r) for r in rows]
 
@@ -28,7 +28,7 @@ def get_by_id(or_id: int):
     """
     with get_db() as (cur, conn):
         # Recherche l'OR correspondant à l'ID
-        cur.execute("SELECT id, vehicule_id, mecanicien_id, statut, date_entree, date_sortie, description, kilometrage, niveau_carburant FROM ordres_reparation WHERE id=%s", (or_id,))
+        cur.execute("SELECT id, vehicule_id, mecanicien_id, statut, date_entree, date_sortie, description, kilometrage, niveau_carburant, visual_condition, accessoires, signature FROM ordres_reparation WHERE id=%s", (or_id,))
         r = cur.fetchone()
     # Renvoie l'OR si trouvé, sinon None
     return _row_to_or(r) if r else None
@@ -39,7 +39,7 @@ def get_by_statut(statut: str):
     """
     with get_db() as (cur, conn):
         # Filtre les résultats en fonction de la colonne statut
-        cur.execute("SELECT id, vehicule_id, mecanicien_id, statut, date_entree, date_sortie, description, kilometrage, niveau_carburant FROM ordres_reparation WHERE statut=%s ORDER BY date_entree DESC", (statut,))
+        cur.execute("SELECT id, vehicule_id, mecanicien_id, statut, date_entree, date_sortie, description, kilometrage, niveau_carburant, visual_condition, accessoires, signature FROM ordres_reparation WHERE statut=%s ORDER BY date_entree DESC", (statut,))
         rows = cur.fetchall()
     return [_row_to_or(r) for r in rows]
 
@@ -49,7 +49,7 @@ def get_by_vehicule(vehicule_id: int):
     """
     with get_db() as (cur, conn):
         # Filtre par véhicule
-        cur.execute("SELECT id, vehicule_id, mecanicien_id, statut, date_entree, date_sortie, description, kilometrage, niveau_carburant FROM ordres_reparation WHERE vehicule_id=%s ORDER BY date_entree DESC", (vehicule_id,))
+        cur.execute("SELECT id, vehicule_id, mecanicien_id, statut, date_entree, date_sortie, description, kilometrage, niveau_carburant, visual_condition, accessoires, signature FROM ordres_reparation WHERE vehicule_id=%s ORDER BY date_entree DESC", (vehicule_id,))
         rows = cur.fetchall()
     return [_row_to_or(r) for r in rows]
 
@@ -60,8 +60,8 @@ def create(o: OrdreReparation):
     with get_db() as (cur, conn):
         # Insère le nouvel OR et renvoie l'ID généré. Utilise la date du jour (CURRENT_DATE) pour la date d'entrée.
         cur.execute(
-            "INSERT INTO ordres_reparation (vehicule_id, mecanicien_id, statut, date_entree, description, kilometrage, niveau_carburant) VALUES (%s,%s,%s,CURRENT_DATE,%s,%s,%s) RETURNING id",
-            (o.vehicule_id, o.mecanicien_id, o.statut, o.description, o.kilometrage, o.niveau_carburant)
+            "INSERT INTO ordres_reparation (vehicule_id, mecanicien_id, statut, date_entree, description, kilometrage, niveau_carburant, visual_condition, accessoires, signature) VALUES (%s,%s,%s,CURRENT_DATE,%s,%s,%s,%s,%s,%s) RETURNING id",
+            (o.vehicule_id, o.mecanicien_id, o.statut, o.description, o.kilometrage, o.niveau_carburant, o.visual_condition, o.accessoires, o.signature)
         )
         # Récupère l'ID inséré
         o.id = cur.fetchone()[0]
@@ -82,8 +82,8 @@ def update(o: OrdreReparation):
     with get_db() as (cur, conn):
         # Met à jour l'ensemble des colonnes de l'OR
         cur.execute(
-            "UPDATE ordres_reparation SET vehicule_id=%s, mecanicien_id=%s, statut=%s, date_entree=%s, date_sortie=%s, description=%s, kilometrage=%s, niveau_carburant=%s WHERE id=%s",
-            (o.vehicule_id, o.mecanicien_id, o.statut, o.date_entree, o.date_sortie, o.description, o.kilometrage, o.niveau_carburant, o.id)
+            "UPDATE ordres_reparation SET vehicule_id=%s, mecanicien_id=%s, statut=%s, date_entree=%s, date_sortie=%s, description=%s, kilometrage=%s, niveau_carburant=%s, visual_condition=%s, accessoires=%s, signature=%s WHERE id=%s",
+            (o.vehicule_id, o.mecanicien_id, o.statut, o.date_entree, o.date_sortie, o.description, o.kilometrage, o.niveau_carburant, o.visual_condition, o.accessoires, o.signature, o.id)
         )
 
 def delete(or_id: int):

@@ -64,6 +64,19 @@ def avancer_statut(or_id: int) -> OrdreReparation:
     or_repo.update_statut(or_id, suivant)
     # Met à jour l'objet en mémoire
     o.statut = suivant
+    
+    # Automatisation : Notifier le client lorsque les tests sont terminés et que le véhicule passe en facturation
+    if suivant == 'facture':
+        try:
+            from repositories import vehicule_repo
+            from services import notification_service
+            veh = vehicule_repo.get_by_id(o.vehicule_id)
+            if veh:
+                msg = f"Bonjour, les interventions sur votre véhicule ({veh.immatriculation}) sont terminées. Votre véhicule est prêt ! L'équipe du Garage."
+                notification_service.envoyer_notification(veh.client_id, "vehicule_pret", msg, "sms")
+        except Exception as e:
+            print(f"Erreur d'envoi de notification automatique: {e}")
+
     # Retourne l'Ordre de Réparation mis à jour
     return o
 

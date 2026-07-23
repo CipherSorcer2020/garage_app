@@ -20,6 +20,14 @@ from ui.widgets.client_widget import ClientWidget
 from ui.widgets.vehicule_widget import VehiculeWidget
 from ui.widgets.or_widget import ORWidget
 from ui.widgets.facture_widget import FactureWidget
+from ui.widgets.planning_widget import PlanningWidget
+from ui.widgets.achat_widget import AchatWidget
+from ui.widgets.agenda_widget import AgendaWidget
+from ui.widgets.crm_widget import CRMWidget
+from ui.widgets.audit_widget import AuditWidget
+from ui.dialogs.technicien_manager_dialog import TechnicienManagerDialog
+from ui.widgets.retour_widget import RetourWidget
+from ui.dialogs.retour_piece_dialog import RetourPieceDialog
 
 class MainWindow(QMainWindow):
     """
@@ -85,11 +93,22 @@ class MainWindow(QMainWindow):
         self.vehicules = VehiculeWidget()
         self.ors = ORWidget()
         self.factures = FactureWidget()
+        self.planning = PlanningWidget()
+        self.achats = AchatWidget()
+        self.agenda = AgendaWidget()
+        self.crm = CRMWidget()
+        self.audit = AuditWidget()
+        self.sinistres = SinistreWidget()
+        self.retour_widget = RetourWidget()
 
         # Add all panel widgets to stack index
-        # Ajoute toutes ces pages dans l'empilement. L'ordre d'ajout correspondra à leur index (0, 1, 2...).
-        for w in [self.dashboard, self.clients, self.vehicules, self.ors, self.factures]:
+        # Ajoute toutes ces pages dans l'empilement. L'ordre d'ajout correspondra a leur index (0, 1, 2...).
+        for w in [self.dashboard, self.clients, self.vehicules, self.ors, self.factures, self.planning, self.achats, self.agenda, self.crm, self.audit, self.sinistres, self.retour_widget]:
             self.stack.addWidget(w)
+
+        # Bouton Techniciens dans la sidebar ouvre le dialogue de gestion
+        # (pas une page separee, c'est une action modale)
+        self._tech_btn_idx = None  # Placeholder : bouton techniciens est un modal
 
         # Ajoute le conteneur de pages sous l'en-tête.
         right.addWidget(self.stack)
@@ -136,17 +155,29 @@ class MainWindow(QMainWindow):
             ("  Véhicules", 2),
             ("  Ordres de réparation", 3),
             ("  Facturation", 4),
+            ("  Planning Atelier", 5),
+            ("  Achats & Stocks", 6),
+            ("  Agenda & RDV", 7),
+            ("  CRM & Notifs", 8),
+            ("  Retours & Garanties", 9),
+            ("  Audit & Traçabilité", 10),
+            ("  Assurances", 11),
         ]
-        # Boucle sur chaque page pour créer son bouton.
+        # Boucle sur chaque page pour creer son bouton.
         for label, idx in pages:
             btn = QPushButton(label)
             btn.setCheckable(False)
-            # Bind button clicks to navigation handler
-            # Connecte le clic sur le bouton à la méthode _navigate, en passant l'index et le titre.
             btn.clicked.connect(lambda _, i=idx, l=label: self._navigate(i, l.strip()))
-            # Garde une trace du bouton créé.
             self.nav_buttons.append(btn)
+                if label == "  Retours \u0026 Garanties":
+                    btn.clicked.disconnect()
+                    btn.clicked.connect(lambda _: RetourPieceDialog.exec_dialog(parent=self))
             layout.addWidget(btn)
+
+        # Bouton special Techniciens : ouvre un dialogue modal plutot qu'une page
+        btn_tech = QPushButton("  Techniciens")
+        btn_tech.clicked.connect(lambda: TechnicienManagerDialog.exec_dialog(parent=self))
+        layout.addWidget(btn_tech)
 
         # Ajoute un ressort (espace extensible) pour repousser la version tout en bas.
         layout.addStretch()
@@ -202,6 +233,6 @@ class MainWindow(QMainWindow):
 
         # Refresh data on navigation if the active widget has a refresh method
         # Si on navigue vers une page, on déclenche sa méthode "refresh" pour que ses données soient à jour.
-        widgets = [self.dashboard, self.clients, self.vehicules, self.ors, self.factures]
+        widgets = [self.dashboard, self.clients, self.vehicules, self.ors, self.factures, self.planning, self.achats, self.agenda, self.crm, self.audit, self.sinistres]
         if hasattr(widgets[index], 'refresh'):
             widgets[index].refresh()

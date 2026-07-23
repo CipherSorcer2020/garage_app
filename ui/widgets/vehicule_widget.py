@@ -13,6 +13,7 @@ from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
 from PyQt6.QtCore import Qt
 # Importation des modules pour interagir avec les bases de données (véhicules et clients).
 from repositories import vehicule_repo, client_repo
+from ui.dialogs.technicien_manager_dialog import TechnicienManagerDialog
 # Importation de la boîte de dialogue d'édition / création de véhicule.
 from ui.dialogs.vehicule_dialog import VehiculeDialog
 
@@ -32,9 +33,6 @@ class VehiculeWidget(QWidget):
         self.refresh()
 
     def _build(self):
-        btn_historique = QPushButton("Historique")
-        btn_historique.clicked.connect(self._historique)
-        actions.addWidget(btn_historique)  # avant btn_edit
         """
         UI lifecycle method: '_build'.
         Assemble les différents éléments (barre de recherche, tableau, boutons).
@@ -71,6 +69,14 @@ class VehiculeWidget(QWidget):
         # Ajoute la barre d'outils entière au layout principal.
         layout.addLayout(toolbar)
 
+        # Barre d'actions en bas pour la modification et la suppression.
+        actions = QHBoxLayout()
+    
+        # Bouton Historique (add this before btn_edit)
+        btn_historique = QPushButton("Historique")
+        btn_historique.clicked.connect(self._historique)
+        actions.addWidget(btn_historique)
+
         # Tableau (Table) pour afficher la liste des véhicules.
         # 0 ligne au départ, 6 colonnes.
         self.table = QTableWidget(0, 6)
@@ -100,8 +106,12 @@ class VehiculeWidget(QWidget):
         btn_del = QPushButton("Supprimer")
         btn_del.setObjectName("btn_danger")
         btn_del.clicked.connect(self._delete)
+        # Bouton Affecter technicien : ouvre le dialogue de gestion des techniciens pour ce vehicule.
+        btn_tech = QPushButton("🔧 Affecter technicien")
+        btn_tech.clicked.connect(self._affecter_technicien)
         # Aligne ces boutons sur la droite.
         actions.addStretch()
+        actions.addWidget(btn_tech)
         actions.addWidget(btn_edit)
         actions.addWidget(btn_del)
         # Ajoute la barre d'actions au layout principal.
@@ -241,3 +251,18 @@ class VehiculeWidget(QWidget):
         from ui.dialogs.historique_vehicule_dialog import HistoriqueVehiculeDialog
         dlg = HistoriqueVehiculeDialog(v, client, self)
         dlg.exec()
+
+    def _affecter_technicien(self):
+        """Ouvre le dialogue de gestion des techniciens pour affecter
+        le technicien responsable du vehicule selectionne.
+        """
+        vid = self._selected_id()
+        if not vid:
+            from PyQt6.QtWidgets import QMessageBox
+            QMessageBox.warning(self, "Selection", "Veuillez selectionner un vehicule.")
+            return
+        # Ouvre le dialogue de gestion des techniciens en passant l'ID du vehicule.
+        # Le dialogue affichera alors un bouton "Affecter ce technicien".
+        TechnicienManagerDialog.exec_dialog(vehicule_id=vid, parent=self)
+        # Rafraichit la liste des vehicules apres une eventuelle modification.
+        self.refresh()
